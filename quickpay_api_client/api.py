@@ -45,6 +45,7 @@ class QPApi(object):
 
     def perform(self, method, path, **kwargs):
         raw = kwargs.pop('raw', False)
+        form_type = kwargs.pop('form', False)
         url = "{0}{1}".format(self.base_url, path)
 
         headers = {
@@ -58,8 +59,15 @@ class QPApi(object):
 
         if method in ['put', 'post', 'patch']:
             headers['content-type'] = 'application/json'
+            data=json.dumps(kwargs)
+
+            # In case we want to submit the data as a form overwrite
+            if form_type:
+                headers['content-type'] = 'application/x-www-form-urlencoded'
+                data = kwargs
+            
             response = self.fulfill(method, url,
-                                    data=json.dumps(kwargs),
+                                    data=data,
                                     headers=headers,
                                     timeout=self.timeout)
         else:
